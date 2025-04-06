@@ -1,7 +1,14 @@
 import express from 'express'
 import User, { IUser, IUserDocument, IUserModel } from '../models/User.js'
+import jwt from 'jsonwebtoken'
 
 const router = express.Router()
+
+const generateToken = (userId: string) => {
+  return jwt.sign({ userId }, process.env.JWT_SECRET!, {
+    expiresIn: '15d'
+  })
+}
 
 router.post('/register', async (req, res) => {
   try {
@@ -45,8 +52,21 @@ router.post('/register', async (req, res) => {
     // save user instance
     await user.save()
 
-    // const user : IUser = await User.create({ username, email, password })
-    // res.status(201).json({ message: 'User created successfully', user })
+    // create jwt
+    const token = generateToken(user._id as string)
+
+    res.status(201).json({
+      message: 'User created successfully',
+      token,
+      user: {
+        id: user._id as string,
+        username: user.username,
+        email: user.email,
+        profileImage: user.profileImage
+      }
+    })
+
+
   } catch (error) {
     console.error("Errore durante la registrazione:", error)
     res.status(500).json({ message: 'Errore durante la creazione dell utente' })
@@ -54,7 +74,41 @@ router.post('/register', async (req, res) => {
 })
 
 router.post('/login', async (req, res) => {
-  res.send('login')
+  try {
+    const { email, password }: { email: string, password: string } = req.body
+
+    if (!email || !password) {
+      res.status(400).json({ message: 'Please fill all fields' })
+      return
+    }
+
+    const user = await User.findOne({ email })
+
+    if (!user) {
+      res.status(400).json({ message: 'Invalid credentials' })
+      return
+    }
+
+    const isPasswordMatch = await user.matchPassword(password)
+    if (!isPasswordMatch) {
+      res.status(400).json({ message: 'Invalid credentials' })
+      return
+    }
+
+    res.status(200).json({
+      message: 'User logged in successfully',
+      token: generateToken(user._id as string),
+      user: {
+        id: user._id as string,
+        username: user.username,
+        email: user.email,
+        profileImage: user.profileImage
+      }
+    })
+
+  } catch (error) {
+
+  }
 })
 
 
