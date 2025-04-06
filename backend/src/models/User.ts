@@ -12,7 +12,7 @@ interface IUser {
 // Rappresenta un documento utente nel database con tutti i METODI DI ISTANZA (come matchPassword).
 // cioè metodi chiamati sull'istanza stessa di User creato
 interface IUserDocument extends IUser, Document {
-  matchPassword(enteredPassword: string): Promise<boolean>;
+  matchPassword(enteredPassword: string): Promise<boolean>
   // You can add custom instance methods here
 }
 
@@ -50,7 +50,10 @@ const userSchema = new mongoose.Schema<IUserDocument>({
   profileImage: {
     type: String,
     default: ''
-  }
+  },
+
+}, {
+  timestamps: true
 })
 
 // Middleware prima dell'evento evento save:
@@ -67,7 +70,7 @@ userSchema.pre('save', async function (next) {
 })
 
 
-userSchema.methods.matchPassword = async function (password: string) : Promise<boolean>{
+userSchema.methods.matchPassword = async function (password: string): Promise<boolean> {
   return await bcrypt.compare(password, this.password)
 }
 
