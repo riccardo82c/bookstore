@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken'
 import User from '../models/User.js'
 import 'dotenv/config'
 
+// get token from headers, extract user from jwt token, and pass to request
 const protectRoute = async (req: any, res: any, next: any) => {
   console.log('protectRoute middleware')
   try {

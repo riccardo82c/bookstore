@@ -20,7 +20,7 @@ router.post('/', protectRoute, async (req: any, res) => {
     const uploadResponse = await cloudinary.uploader.upload(image)
     const imageUrl = uploadResponse.secure_url
 
-    // save to db
+    // save to db, ADD THE USER._ID RETRIEVE FROM JWT
     const book: IBookDocument = new Book({
       title,
       caption,
@@ -30,17 +30,79 @@ router.post('/', protectRoute, async (req: any, res) => {
     })
 
     await book.save()
-
     res.status(201).json({ message: 'Book created successfully', book })
+
+  } catch (error) {
+    res.status(500).json({ message: 'Something went wrong', error })
+  }
+})
+
+// get all books with pagination for infinite scroll
+router.get('/', protectRoute, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1
+    const limit = parseInt(req.query.limit as string) || 5
+
+    const skip = (page - 1) * limit
+    // estract books by pages number and whit limit number of record
+    const books = await Book.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate('user', 'username profileImage')
+
+    const totalBooks = await Book.countDocuments()
+
+    res.status(200).json({
+      books,
+      currentPage: page,
+      totalBooks,
+      totalPage: Math.ceil(totalBooks / limit)
+    })
+  } catch (error) {
+    res.status(500).json({ message: 'Something went wrong', error })
+  }
+})
+
+// get all books
+router.get('/all', protectRoute, async (req, res) => {
+  try {
+    const books = await Book.find()
+    res.status(200).json(books)
   } catch (error) {
     res.status(500).json({ message: 'Something went wrong', error })
   }
 })
 
 // delete a book
-// router.delete('/:id', (req, res) => {
-//   res.send('delete a book')
-// })
+router.delete('/:id', protectRoute, async (req: any, res) => {
+
+  try {
+    const book = await Book.findById(req.params.id)
+
+    if (!book) {
+      res.status(404).json({ message: 'Book not found' })
+      return
+    }
+
+    // check if user is the creator
+    const bookUserId = book.user
+    const loggedUserId = req.user._id
+
+    // if not exit
+    if (bookUserId.toString() !== loggedUserId.toString()) {
+      res.status(401).json({ message: 'Unauthorized to delete this content' })
+      return
+    }
+
+    console.log('the logged user is the creator of the searched book')
+    await book.deleteOne()
+    res.status(200).json({ message: 'book deleted' })
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ message: 'Something went wrong', error })
+  }
+})
 
 // update a book
 // router.put('/:id', (req, res) => {
