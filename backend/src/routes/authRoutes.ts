@@ -47,7 +47,7 @@ router.post('/register', async (req, res) => {
 
     // create user instance
     const user: IUserDocument = new User({ username, email, password, profileImage })
-    console.log('user', user)
+    console.log('create user', user)
 
     // save user instance
     await user.save()
