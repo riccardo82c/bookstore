@@ -2,4 +2,4 @@
 testing react native app with mern stack
 
 
-https://youtu.be/o3IqOrXtxm8?si=mL4XJKkx5Kf3lIsB&t=4662
+https://youtu.be/o3IqOrXtxm8?si=m3MuwyMU29ZuWRbT&t=5414
