@@ -2,11 +2,12 @@ import express from 'express'
 import Book, { IBookDocument } from '../models/Book.js'
 import cloudinary from '../lib/cloudinary.js'
 import protectRoute from '../middleware/auth.middleware.js'
+import { Request } from 'express'
 
 const router = express.Router()
 
 // create a new book
-router.post('/', protectRoute, async (req: any, res) => {
+router.post('/', protectRoute, async (req: Request, res) => {
 
   try {
     const { title, caption, image, rating } = req.body
@@ -26,7 +27,7 @@ router.post('/', protectRoute, async (req: any, res) => {
       caption,
       rating,
       image: imageUrl,
-      user: req.user._id
+      user: req.user!._id
     })
 
     await book.save()
@@ -75,7 +76,7 @@ router.get('/all', protectRoute, async (req, res) => {
 })
 
 // delete a book
-router.delete('/:id', protectRoute, async (req: any, res) => {
+router.delete('/:id', protectRoute, async (req: Request, res) => {
 
   try {
     const book = await Book.findById(req.params.id)
@@ -87,16 +88,28 @@ router.delete('/:id', protectRoute, async (req: any, res) => {
 
     // check if user is the creator
     const bookUserId = book.user
-    const loggedUserId = req.user._id
+    const loggedUserId = req.user!._id
 
     // if not exit
-    if (bookUserId.toString() !== loggedUserId.toString()) {
+    if (bookUserId.toString() !== loggedUserId!.toString()) {
       res.status(401).json({ message: 'Unauthorized to delete this content' })
       return
     }
 
     console.log('the logged user is the creator of the searched book')
     await book.deleteOne()
+
+    if (book.image && book.image.includes('cloudinary')) {
+      try {
+        const imagePublicId = book.image.split('/').pop()?.split('.')[0]
+        cloudinary.uploader.destroy(imagePublicId!)
+          .then(result => console.log('result image delete', result))
+      } catch (error) {
+        res.status(500).json({ message: 'Error deleting image from cloudinary', error })
+        return
+      }
+    }
+
     res.status(200).json({ message: 'book deleted' })
   } catch (error) {
     console.log(error)

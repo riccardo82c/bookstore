@@ -1,10 +1,15 @@
 import jwt from 'jsonwebtoken'
 import User from '../models/User.js'
 import 'dotenv/config'
+import { Request, Response, NextFunction } from 'express'
+
+interface DecodedToken {
+  userId: string
+}
 
 // get token from headers, extract user from jwt token, and pass to request
-const protectRoute = async (req: any, res: any, next: any) => {
-  console.log('protectRoute middleware')
+const protectRoute = async (req: Request, res: Response, next: NextFunction) => {
+  console.log('verify auth token')
   try {
     // get token from headers
     // const token = req.headers('Authorization'.replace('Bearer ', ''))
@@ -15,7 +20,7 @@ const protectRoute = async (req: any, res: any, next: any) => {
     }
 
     // verify token
-    const decoded: any = jwt.verify(token, process.env.JWT_SECRET as string)
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as DecodedToken
 
 
     // find user by id extracted from token and select all User object without password fiedl
