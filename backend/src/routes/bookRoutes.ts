@@ -110,22 +110,62 @@ router.delete('/:id', protectRoute, async (req: Request, res) => {
       }
     }
 
-    res.status(200).json({ message: 'book deleted' })
+    res.status(200).json({ message: 'book deleted successfully' })
   } catch (error) {
     console.log(error)
     res.status(500).json({ message: 'Something went wrong', error })
   }
 })
 
+// get raccomended books by the logged user
+router.get('/user', protectRoute, async (req: Request, res) => {
+  try {
+    const loggedUserId = req.user!._id
+    const books = await Book.find({ user: loggedUserId })
+      .sort({ createdAt: -1 })
+      .populate('user', 'username profileImage')
+
+    if (!books) {
+      res.status(404).json({ message: 'No books found' })
+      return
+    }
+    res.status(200).json(books)
+  } catch (error) {
+    res.status(500).json({ message: 'Something went wrong', error })
+  }
+})
+
 // update a book
-// router.put('/:id', (req, res) => {
-//   res.send('update a book')
-// })
+router.put('/:id', protectRoute, async (req: Request, res) => {
+  try {
+    const { title, caption, image, rating } = req.body
+    const bookId = req.params.id
+    const result = await Book.findByIdAndUpdate(bookId, { title, caption, image, rating }, { new: true })
+    if (!result) {
+      res.status(404).json({ message: 'Book not found' })
+      return
+    } else {
+      res.status(200).json({ message: 'Book updated successfully', book: result })
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Something went wrong', error })
+  }
+})
 
-// get a book
-// router.get('/:id', (req, res) => {
-//   res.send('get a book')
-// })
-
+// get a book by id
+router.get('/:id', protectRoute, async (req: Request, res) => {
+  try {
+    const bookId = req.params.id
+    const book = await Book.findById(bookId)
+    if (!book) {
+      res.status(400).json({ message: 'Book id is required' })
+      return
+    } else {
+      res.status(200).json({ message: 'Book found', book })
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Something went wrong', error })
+  }
+})
 
 export default router
