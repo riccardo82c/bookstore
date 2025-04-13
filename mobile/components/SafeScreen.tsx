@@ -5,17 +5,17 @@ import { PropsWithChildren } from 'react'
 import { StyleSheet } from 'react-native'
 
 export default function SafeScreen({ children }: PropsWithChildren) {
-
   const insets = useSafeAreaInsets()
 
   return (
-    <View style={[
-      styles.container,
-      {
-        paddingTop: insets.top,
-
-      }
-    ]}>
+    <View
+      style={[
+        styles.container,
+        {
+          paddingTop: insets.top,
+        },
+      ]}
+    >
       {children}
     </View>
   )
@@ -24,6 +24,6 @@ export default function SafeScreen({ children }: PropsWithChildren) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background
+    backgroundColor: COLORS.background,
   },
 })

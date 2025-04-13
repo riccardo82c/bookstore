@@ -3,14 +3,9 @@ import { Link } from 'expo-router'
 import { LinkProps } from 'expo-router'
 
 export default function Index() {
-
   return (
     <View style={styles.container}>
-      <Text
-        style={styles.text}
-      >
-        Landing Page
-      </Text>
+      <Text style={styles.text}>Landing Page !</Text>
       <Link href={'/(auth)/signup'}>Signup</Link>
       <Link href={'/(auth)' as LinkProps['href']}>Login</Link>
     </View>
