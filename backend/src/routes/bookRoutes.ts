@@ -97,11 +97,15 @@ router.delete('/:id', protectRoute, async (req: Request, res) => {
     }
 
     console.log('the logged user is the creator of the searched book')
-    await book.deleteOne()
 
+
+    // delete image from cloudinary
+    // check if the image is from cloudinary
     if (book.image && book.image.includes('cloudinary')) {
       try {
+        // extract the public id from the image url
         const imagePublicId = book.image.split('/').pop()?.split('.')[0]
+        // delete the image from cloudinary
         cloudinary.uploader.destroy(imagePublicId!)
           .then(result => console.log('result image delete', result))
       } catch (error) {
@@ -109,6 +113,9 @@ router.delete('/:id', protectRoute, async (req: Request, res) => {
         return
       }
     }
+
+    // delete book from db
+    await book.deleteOne()
 
     res.status(200).json({ message: 'book deleted successfully' })
   } catch (error) {
