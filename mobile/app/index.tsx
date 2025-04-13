@@ -1,29 +1,18 @@
 import { StyleSheet, Text, View } from 'react-native'
-import { Image } from 'expo-image'
+import { Link } from 'expo-router'
+import { LinkProps } from 'expo-router'
 
 export default function Index() {
+
   return (
     <View style={styles.container}>
       <Text
-        style={{
-          color: 'red',
-          fontSize: 24,
-          textAlign: 'center',
-          marginHorizontal: 20,
-          fontWeight: 'bold',
-          marginBottom: 20,
-        }}
+        style={styles.text}
       >
-        Benvenuto in Expo Router!
-
-
+        Landing Page
       </Text>
-      <Image
-        source={{
-          uri: 'https://images.unsplash.com/photo-1741851373441-88b6f673d655?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        }}
-        style={styles.image}
-      ></Image>
+      <Link href={'/(auth)/signup'}>Signup</Link>
+      <Link href={'/(auth)' as LinkProps['href']}>Login</Link>
     </View>
   )
 }
@@ -37,6 +26,12 @@ const styles = StyleSheet.create({
   image: {
     width: 200,
     height: 200,
-    borderRadius: 20,
+    borderRadius: 50,
+  },
+  text: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'grey',
+    marginBottom: 20,
   },
 })
