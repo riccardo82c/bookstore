@@ -1,9 +1,16 @@
-import { View, Text, TextInput } from 'react-native'
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native'
 import styles from '~/assets/styles/login.styles'
 import { useEffect, useState } from 'react'
 import { Image } from 'expo-image'
 import { Ionicons } from '@expo/vector-icons'
 import COLORS from '~/constants/colors'
+import { Link } from 'expo-router'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -12,7 +19,13 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false)
 
   const handleLogin = () => {
-    console.log('handleLogin')
+    const formData = new FormData()
+    formData.append('email', email)
+    formData.append('password', password)
+
+    formData.forEach((value, key) => {
+      console.log(key, value)
+    })
   }
 
   return (
@@ -53,7 +66,7 @@ export default function Login() {
             <Text style={styles.label}>Password</Text>
             <View style={styles.inputContainer}>
               <Ionicons
-                name='key-outline'
+                name='lock-closed-outline'
                 size={20}
                 color={COLORS.primary}
                 style={styles.inputIcon}
@@ -62,11 +75,42 @@ export default function Login() {
                 style={styles.input}
                 placeholder='Enter your email'
                 placeholderTextColor={COLORS.placeholderText}
-                value={email}
-                onChangeText={setEmail}
-                keyboardType='email-address'
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
               />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                <Ionicons
+                  style={styles.inputIcon}
+                  name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                  size={20}
+                  color={COLORS.primary}
+                />
+              </TouchableOpacity>
             </View>
+          </View>
+
+          {/* BUTTON */}
+          <TouchableOpacity
+            style={styles.button}
+            onPress={handleLogin}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator size='small' color={COLORS.white} />
+            ) : (
+              <Text style={styles.buttonText}>Login</Text>
+            )}
+          </TouchableOpacity>
+
+          {/* FOOTER */}
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Don't have an account?</Text>
+            <Link href={'/signup'} asChild>
+              <TouchableOpacity>
+                <Text style={styles.link}>Register</Text>
+              </TouchableOpacity>
+            </Link>
           </View>
         </View>
       </View>
