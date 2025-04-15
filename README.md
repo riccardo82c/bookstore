@@ -6,4 +6,4 @@ https://storyset.com/
 
 
 # current video point
-https://youtu.be/o3IqOrXtxm8?feature=shared&t=8684
+https://youtu.be/o3IqOrXtxm8?si=ErEZlvhce8-TLkwL&t=10255
