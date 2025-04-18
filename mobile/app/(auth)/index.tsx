@@ -28,7 +28,7 @@ export default function Login() {
       const backendUrl = 'http://192.168.1.137:3000/api/auth/login'
       const localhostBackend = 'http://localhost:3000/api/auth/login'
 
-      const response = await fetch(urlDaEmulatore, {
+      const response = await fetch(localhostBackend, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

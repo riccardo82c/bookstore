@@ -9,8 +9,13 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   register: async (username, email, password) => {
     set({ isLoading: true })
+
+    const urlDaEmulatore = 'http://10.0.2.2:3000/api/auth/register'
+    const backendUrl = 'http://192.168.1.137:3000/api/auth/register'
+    const localhostBackend = 'http://localhost:3000/api/auth/register'
+
     try {
-      const response = await fetch('http://10.0.2.2:3000/api/auth/register', {
+      const response = await fetch(localhostBackend, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
