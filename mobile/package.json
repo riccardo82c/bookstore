@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
-    "start:standard": "API_TYPE=standard expo start",
+    "start:local": "API_TYPE=local expo start",
     "start:emulator": "API_TYPE=emulator expo start",
     "start:remote": "API_TYPE=remote expo start",
     "reset-project": "node ./scripts/reset-project.js",
