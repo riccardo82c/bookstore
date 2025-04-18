@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { AuthStore, User } from './authStore.type'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { BASE_URL } from '~/config/api'
 
 export const useAuthStore = create<AuthStore>((set) => ({
   user: null,
@@ -16,7 +17,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
     const deployUrl = 'https://bookstore-abp0.onrender.com/api/auth/register'
 
     try {
-      const response = await fetch(deployUrl, {
+      const response = await fetch(`${BASE_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

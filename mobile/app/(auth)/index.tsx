@@ -13,6 +13,7 @@ import { Image } from 'expo-image'
 import { Ionicons } from '@expo/vector-icons'
 import COLORS from '~/constants/colors'
 import { Link } from 'expo-router'
+import { BASE_URL } from '~/config/api'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -29,7 +30,7 @@ export default function Login() {
       const localhostBackend = 'http://localhost:3000/api/auth/login'
       const deployUrl = 'https://bookstore-abp0.onrender.com/api/auth/login'
 
-      const response = await fetch(deployUrl, {
+      const response = await fetch(`${BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
