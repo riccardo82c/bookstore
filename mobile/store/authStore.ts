@@ -13,9 +13,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
     const urlDaEmulatore = 'http://10.0.2.2:3000/api/auth/register'
     const backendUrl = 'http://192.168.1.137:3000/api/auth/register'
     const localhostBackend = 'http://localhost:3000/api/auth/register'
+    const deployUrl = 'https://bookstore-abp0.onrender.com/api/auth/register'
 
     try {
-      const response = await fetch(localhostBackend, {
+      const response = await fetch(deployUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
