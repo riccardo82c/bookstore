@@ -13,41 +13,17 @@ import { Image } from 'expo-image'
 import { Ionicons } from '@expo/vector-icons'
 import COLORS from '~/constants/colors'
 import { Link } from 'expo-router'
-import { BASE_URL } from '~/config/api'
+import { useAuthStore } from '~/store/authStore'
 
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const { isLoading, login } = useAuthStore()
 
   const handleLogin = async () => {
-    setIsLoading(true)
-    try {
-      // TEST:
-      const urlDaEmulatore = 'http://10.0.2.2:3000/api/auth/login'
-      const backendUrl = 'http://192.168.1.137:3000/api/auth/login'
-      const localhostBackend = 'http://localhost:3000/api/auth/login'
-      const deployUrl = 'https://bookstore-abp0.onrender.com/api/auth/login'
-
-      const response = await fetch(`${BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      })
-
-      const data = await response.json()
-      console.log(data)
-    } catch (error) {
-      console.error(error)
-    } finally {
-      setIsLoading(false)
-    }
+    const result = await login(email, password)
+    console.log(result)
   }
 
   return (
