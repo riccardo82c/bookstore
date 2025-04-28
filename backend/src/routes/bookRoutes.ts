@@ -2,30 +2,69 @@ import express from 'express'
 import Book, { IBookDocument } from '../models/Book.js'
 import cloudinary from '../lib/cloudinary.js'
 import protectRoute from '../middleware/auth.middleware.js'
-import { Request } from 'express'
+import { Request, Response } from 'express'
+import multer from 'multer'
+
+interface CloudinaryResponse {
+  secure_url: string;
+  public_id: string;
+  // altri campi che potrebbero servirti
+}
 
 const router = express.Router()
 
-// create a new book
-router.post('/', protectRoute, async (req: Request, res) => {
+// Configurazione di multer per file di dimensioni maggiori
+const storage = multer.memoryStorage()
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB
+  }
+})
 
+// utility fn per fare uplaod a cloduinary di un immagine
+const uploadToCloudinary = (buffer: Buffer): Promise<CloudinaryResponse> => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        resource_type: 'auto',
+        folder: 'your_folder'
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        return resolve(result as CloudinaryResponse);
+      }
+    );
+
+    uploadStream.end(buffer);
+  });
+};
+
+// create a new book with formData for image upload
+router.post('/', protectRoute, upload.single('image'), async (req, res) => {
   try {
-    const { title, caption, image, rating } = req.body
+    const { title, caption, rating } = req.body
 
-    if (!title || !caption || !image || !rating) {
+    if (!title || !caption || !rating) {
       res.status(400).json({ message: 'Please fill all fields' })
       return
     }
 
-    // upload image to cloudinary
-    const uploadResponse = await cloudinary.uploader.upload(image)
+    if (!req.file) {
+      res.status(400).json({ message: 'Image is required' })
+      return
+    }
+
+    // Caricamento diretto del buffer su Cloudinary
+    const uploadResponse = await uploadToCloudinary(req.file.buffer);
+
     const imageUrl = uploadResponse.secure_url
 
-    // save to db, ADD THE USER._ID RETRIEVE FROM JWT
+    // Salva nel database
     const book: IBookDocument = new Book({
       title,
       caption,
-      rating,
+      rating: parseInt(rating),
       image: imageUrl,
       user: req.user!._id
     })
@@ -34,6 +73,7 @@ router.post('/', protectRoute, async (req: Request, res) => {
     res.status(201).json({ message: 'Book created successfully', book })
 
   } catch (error) {
+    console.error('Error creating book:', error)
     res.status(500).json({ message: 'Something went wrong!!!', error })
   }
 })

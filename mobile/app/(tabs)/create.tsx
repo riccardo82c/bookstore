@@ -8,8 +8,6 @@ import { Ionicons } from '@expo/vector-icons'
 import { BASE_URL } from '~/config/api'
 import { useAuthStore } from '~/store/authStore'
 import * as ImagePicker from 'expo-image-picker'
-import * as FileSystem from 'expo-file-system'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 
 export default function Create() {
 
@@ -17,13 +15,13 @@ export default function Create() {
   const [caption, setCaption] = useState('')
   const [rating, setRating] = useState(3)
   const [image, setImage] = useState<string | null>(null)
-  const [imageBase64, setImageBase64] = useState<string | null | undefined>(null)
   const [loading, setLoading] = useState(false)
+
+  const {token} = useAuthStore()
 
   const router = useRouter()
 
   const pickImage = async () => {
-
     try {
       // check permessi
       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync()
@@ -37,25 +35,12 @@ export default function Create() {
         mediaTypes: 'images',
         allowsEditing: true,
         aspect: [4, 3],
-        quality: 0.5,
-        base64: true
+        quality: 0.5 // Ridotta qualità per file più piccoli
       })
 
       if (!result.canceled) {
         setImage(result.assets[0].uri)
-
-        if (result.assets[0].base64) {
-          setImageBase64(result.assets[0].base64)
-        }
-        else {
-          //converti uri in base64 se non è già presente nella conversione
-          const base64 = await FileSystem.readAsStringAsync(result.assets[0].uri, {
-            encoding: FileSystem.EncodingType.Base64,
-          })
-          setImageBase64(base64)
-        }
       }
-
     } catch (error) {
       console.error('Error picking image:', error)
       if (error instanceof Error) Alert.alert('Error picking image:', error.message)
@@ -65,33 +50,41 @@ export default function Create() {
 
   const handleSubmit = async () => {
 
+    if (!token) {
+      Alert.alert('Error', 'You are not logged in')
+      return
+    }
 
-    const token = await AsyncStorage.getItem('token')
-
-    if (!title || !caption || !imageBase64 || !rating) return Alert.alert('Error', 'Please fill all fields')
+    if (!title || !caption || !image || !rating) return Alert.alert('Error', 'Please fill all fields')
 
     try {
       setLoading(true)
 
-      // get file ext from uri
-      const uriParts = imageBase64.split('.')
-      const fileType = uriParts[uriParts.length - 1]
-      const imageType = fileType ? `image/${fileType.toLowerCase()}` : 'image/jpeg'
+      // Creare un oggetto FormData
+      const formData = new FormData()
 
-      const imageDataUrl = `data:${imageType};base64,${imageBase64}`
+      // Aggiungiamo i dati di testo
+      formData.append('title', title)
+      formData.append('caption', caption)
+      formData.append('rating', rating.toString())
+
+      // Preparare il file immagine per FormData
+      let filename = image.split('/').pop()
+      let match = /\.(\w+)$/.exec(filename || '')
+      let type = match ? `image/${match[1]}` : 'image/jpeg'
+
+      formData.append('image', {
+        uri: image,
+        name: filename || 'photo.jpg',
+        type
+      } as unknown as Blob)
 
       const response = await fetch(`${BASE_URL}/books`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          title,
-          caption,
-          image: imageDataUrl,
-          rating
-        })
+        body: formData
       })
 
       if (!response.ok) {
@@ -111,7 +104,6 @@ export default function Create() {
   }
 
   return (
-
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -125,11 +117,9 @@ export default function Create() {
           </View>
 
           {/* FORM */}
-
           <View style={styles.form}>
 
             {/* BOOK TITLE */}
-
             <View style={styles.formGroup}>
               <Text style={styles.label}>Book Title</Text>
               <View style={styles.inputContainer}>
@@ -166,7 +156,6 @@ export default function Create() {
                   </TouchableOpacity>
                 ))}
               </View>
-
             </View>
 
             {/* IMAGE */}
@@ -191,9 +180,7 @@ export default function Create() {
                     <Text style={styles.placeholderText}>Tap to select image</Text>
                   </View>
                 )}
-
               </TouchableOpacity>
-
             </View>
 
             {/* CAPTION */}
@@ -233,10 +220,6 @@ export default function Create() {
           </View>
         </View>
       </ScrollView>
-
-
     </KeyboardAvoidingView>
-
-
   )
 }
