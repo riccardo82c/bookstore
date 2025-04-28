@@ -18,4 +18,4 @@ https://render.com
 }
 
 # current video point
-https://youtu.be/o3IqOrXtxm8?feature=shared&t=11738
+https://youtu.be/o3IqOrXtxm8?feature=shared&t=14209

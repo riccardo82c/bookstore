@@ -36,7 +36,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
     }
   },
 
-  // login fn
+  // login fn + salvataggio dati in zustand + salvataggio dati in asyncStorage
   login: async (email, password) => {
     set({ isLoading: true })
 

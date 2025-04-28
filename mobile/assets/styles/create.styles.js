@@ -78,19 +78,23 @@ const styles = StyleSheet.create({
     height: 100,
     color: COLORS.textDark,
   },
-  ratingContainer: {
-    flexDirection: 'row',
+  // ratingContainer: {
+  //   flexDirection: 'row',
+  //   justifyContent: 'space-around',
+  //   alignItems: 'center',
+  //   backgroundColor: COLORS.inputBackground,
+  //   borderRadius: 12,
+  //   borderWidth: 1,
+  //   borderColor: COLORS.border,
+  //   padding: 8,
+  // },
+  starContainer: {
     justifyContent: 'space-around',
-    alignItems: 'center',
-    backgroundColor: COLORS.inputBackground,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    padding: 8,
+    paddingBlock: 8,
   },
-  starButton: {
-    padding: 8,
-  },
+  // starButton: {
+  //   padding: 8,
+  // },
   imagePicker: {
     width: '100%',
     height: 200,

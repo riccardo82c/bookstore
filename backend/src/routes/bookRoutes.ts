@@ -34,12 +34,13 @@ router.post('/', protectRoute, async (req: Request, res) => {
     res.status(201).json({ message: 'Book created successfully', book })
 
   } catch (error) {
-    res.status(500).json({ message: 'Something went wrong', error })
+    res.status(500).json({ message: 'Something went wrong!!!', error })
   }
 })
 
 // get all books with pagination for infinite scroll
 router.get('/', protectRoute, async (req, res) => {
+
   try {
     const page = parseInt(req.query.page as string) || 1
     const limit = parseInt(req.query.limit as string) || 5

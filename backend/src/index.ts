@@ -20,6 +20,10 @@ app.use(express.json())
 // cors per le richieste da frontend
 app.use(cors())
 
+// increase limit per grandi payload ( base64 )
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
 // Rotte
 app.use("/api/auth", authRoutes)
 app.use("/api/books", bookRoutes)

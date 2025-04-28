@@ -25,6 +25,36 @@ const commandChoices = [
     name: `🧹 Clear Cache (${chalk.dim('Solo pulizia della cache')})`,
     value: 'bun expo start --clear',
   },
+  {
+    name: `🧹📱 Clear Cache Android (${chalk.dim(
+      'Solo pulizia della cache specifica android simulator'
+    )})`,
+    value: 'bunx expo start --clear --android',
+  },
+  // Aggiunto comando con porta alternativa per risolvere problemi di conflitto
+  {
+    name: `🧹📱🔌 Clear Cache Android + Porta alternativa (${chalk.dim(
+      'Risolve problemi di porta'
+    )})`,
+    value: 'bunx expo start --clear --android --port 19001',
+  },
+  {
+    name: `🧹🔄 Pulizia processi emulatore e riavvio (${chalk.dim(
+      'Risolve problemi di emulatore zombie'
+    )})`,
+    value:
+      'pkill -9 qemu-system && adb kill-server && adb start-server && bunx expo start --android',
+  },
+  {
+    name: `🔍 Verifica porte Metro in uso (${chalk.dim(
+      'Controlla porta 8081'
+    )})`,
+    value: 'lsof -i :8081',
+  },
+  {
+    name: `🗺️  Sitemap (${chalk.dim('Mostra mappa App')})`,
+    value: 'bunx expo-router-sitemap',
+  },
   { name: `🚪 Esci (${chalk.dim('Non fare nulla')})`, value: null },
 ]
 
