@@ -4,7 +4,7 @@ testing react native app with mern stack
 ## free image customizable
 https://storyset.com/
 
-## /backend deploiato branch:main
+## /backend deployato tramite branch:main
 https://render.com
 
 ## webhook creato su github per triggerare render.com

@@ -17,7 +17,7 @@ export default function Create() {
   const [image, setImage] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  const {token} = useAuthStore()
+  const { token } = useAuthStore()
 
   const router = useRouter()
 
@@ -87,18 +87,24 @@ export default function Create() {
         body: formData
       })
 
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.message || 'something went wrong')
-      } else {
-        setLoading(false)
-        Alert.alert('Success', 'Book added successfully')
-        router.push('/')
-      }
+      const data = await response.json()
+
+      if (!response.ok) throw new Error(data.message || 'something went wrong')
+
+
+      Alert.alert('Success', 'Book added successfully')
+
+      setTitle('')
+      setCaption('')
+      setImage(null)
+      setRating(3)
+
+      router.push('/')
 
     } catch (error) {
       if (error instanceof Error) Alert.alert('Error', error.message)
       else Alert.alert('Error', 'An unknown error occurred.')
+    } finally {
       setLoading(false)
     }
   }
