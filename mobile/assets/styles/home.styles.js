@@ -123,6 +123,45 @@ const styles = StyleSheet.create({
   footerLoader: {
     marginVertical: 20,
   },
+  headerTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 0,
+  },
+
+  totalBooksText: {
+    color: COLORS.textSecondary,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+
+  // Stili per l'indicatore di pagina flottante
+  floatingPageIndicator: {
+    position: 'absolute',
+    right: 16,
+    bottom: 24,
+    backgroundColor: COLORS.primary,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    // Per garantire che l'elemento flottante sia sopra tutto il resto
+    zIndex: 1000,
+  },
+
+  floatingPageText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 12,
+  },
+
+
 })
 
 export default styles

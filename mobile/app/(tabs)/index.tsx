@@ -1,14 +1,18 @@
-import { View, Text, FlatList } from 'react-native'
-import { useEffect, useState } from 'react'
+import { View, Text, FlatList, Alert, ActivityIndicator, RefreshControl, Animated } from 'react-native'
+import { useEffect, useState, useRef } from 'react'
 import { useAuthStore } from '~/store/authStore'
 import { BASE_URL } from '~/config/api'
 import styles from '~/assets/styles/home.styles'
 import { Image } from 'expo-image'
+import { Ionicons } from '@expo/vector-icons'
+import COLORS from '~/constants/colors'
+import { formatPublishDate, sleep } from '~/lib/utils'
+import Loader from '~/components/Loader'
+import BookCard from '~/components/BookCard'
 
 interface IUser {
   username: string
   email: string
-  password: string
   profileImage: string
 }
 
@@ -18,25 +22,47 @@ interface IBook {
   caption: string,
   image: string,
   rating: number,
-  user: IUser, // L'ID dell'utente come stringa
-  createdAt?: string,
-  updatedAt?: string,
+  user: IUser,
+  createdAt: string,
+  updatedAt: string,
+}
+
+interface BooksResponse {
+  books: IBook[]
+  currentPage: number
+  totalBooks: number
+  totalPage: number
+  message?: string
 }
 
 export default function Home() {
-
   const { token } = useAuthStore()
 
   const [books, setBooks] = useState<IBook[] | []>([])
   const [loading, setLoading] = useState(false)
-  const [rereshing, setRefreshing] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
+  const [totalBooks, setTotalBooks] = useState(0)
+  const [totalPage, setTotalPage] = useState(0)
 
-  const getBooks = async () => {
-    setLoading(true)
+  // Riferimento allo scroll per gestire animazioni
+  const scrollY = useRef(new Animated.Value(0)).current
+
+  // Stato per controllare la visibilità dell'indicatore di pagina flottante
+  const [showPageIndicator, setShowPageIndicator] = useState(false)
+
+  const getBooks = async (pageNum = 1, refresh = false) => {
     try {
-      const response = await fetch(`${BASE_URL}/books?page=${page}`, {
+      if (refresh) {
+        setRefreshing(true)
+      } else if (pageNum === 1) {
+        setLoading(true)
+      } else {
+        setLoading(true)
+      }
+
+      const response = await fetch(`${BASE_URL}/books?page=${pageNum}&limit=5`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -44,44 +70,62 @@ export default function Home() {
         },
       })
 
-      const data = await response.json()
+      const data: BooksResponse = await response.json()
 
-      console.log(data)
+      if (!response.ok) throw new Error(data.message || 'Failed fetching books')
 
-      if (!response.ok) throw new Error(data.message || 'something went wrong')
+      const uniqueBooks: IBook[] =
+        refresh || pageNum === 1
+          ? data.books
+          : [...books, ...data.books]
+            .filter((book, index, self) =>
+              index === self.findIndex((b) => b._id === book._id)
+            )
 
-      if (data.length < 10) {
-        setHasMore(false)
-      }
+      setBooks(uniqueBooks)
+      setHasMore(pageNum < data.totalPage)
+      setPage(pageNum)
+      setTotalBooks(data.totalBooks)
+      setTotalPage(data.totalPage)
 
-      setBooks(data.books)
-      setLoading(false)
-      setRefreshing(false)
+      // Mostra l'indicatore di pagina solo se ci sono più pagine
+      setShowPageIndicator(data.totalPage > 1)
+
     } catch (error: any) {
-      setLoading(false)
-      setRefreshing(false)
-      return { success: false, message: error.message }
+      Alert.alert('Error', 'Could not fetch books. Please try again.')
+    } finally {
+      if (refresh) {
+        await sleep(500)
+        setRefreshing(false)
+      } else {
+        setLoading(false)
+      }
     }
-
   }
 
   const handleLoadMore = async () => {
-    if (hasMore) {
-      setPage(page + 1)
-      getBooks()
+    if (hasMore && !loading && !refreshing) {
+      await getBooks(page + 1)
+    } else {
+      setShowPageIndicator(false)
+
     }
   }
 
-  const renderBook = ({ item }: { item: IBook }) => {
-    return (
-      <View style={styles.bookCard}>
-        <View style={styles.bookHeader}>
-          <View style={styles.userInfo}>
-            <Image source={{ uri: item.user.profileImage }} style={styles.avatar} />
-            <Text style={styles.username}>{item.user.username}</Text>
-          </View>
-        </View>
+  const handleRefresh = async () => {
+    await getBooks(1, true)
+  }
 
+  const renderHeader = () => {
+    return (
+      <View style={styles.header}>
+        <View style={styles.headerTopRow}>
+          <Text style={styles.headerTitle}>Bookworm 🐛</Text>
+        </View>
+        {totalBooks > 0 && (
+          <Text style={styles.totalBooksText}> <Text style={{ fontWeight: 800 }}>{totalBooks}</Text> books!!!</Text>
+        )}
+        <Text style={styles.headerSubtitle}>Discover great read from the community 👇</Text>
       </View>
     )
   }
@@ -92,31 +136,79 @@ export default function Home() {
     }
   }, [])
 
+  // Calcola l'opacità dell'indicatore di pagina in base allo scroll
+  const pageIndicatorOpacity = scrollY.interpolate({
+    inputRange: [0, 50, 100],
+    outputRange: [0, 0.7, 1],
+    extrapolate: 'clamp'
+  })
+
+  // mostra loader SOLO al primo caricamento dei dati
+  const isInitialLoading = loading && books.length === 0 && !refreshing
 
   return (
     <View style={styles.container}>
-      {/* crate list from books */}
-      <FlatList
-        data={books}
-        keyExtractor={(item: any) => item._id}
-        renderItem={renderBook}
-        contentContainerStyle={styles.listContainer}
-        showsVerticalScrollIndicator={false}
-        onEndReached={() => {
-          if (hasMore) {
-            setPage(page + 1)
-            getBooks()
-          }
-        }}
-        onEndReachedThreshold={0.5}
-        refreshing={rereshing}
-        onRefresh={() => {
-          setRefreshing(true)
-          setPage(1)
-          getBooks()
-        }}
-      />
+      {isInitialLoading ? (
+        <Loader />
+      ) : (
+        <>
+          <Animated.FlatList
+            data={books}
+            renderItem={BookCard}
+            keyExtractor={(item) => item._id}
+            contentContainerStyle={styles.listContainer}
+            showsVerticalScrollIndicator={false}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.1}
+            onScroll={Animated.event(
+              [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+              { useNativeDriver: true }
+            )}
+            scrollEventThrottle={16}
 
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+                colors={[COLORS.primary]}
+                tintColor={COLORS.primary}
+              />
+            }
+
+            ListHeaderComponent={renderHeader()}
+
+            ListFooterComponent={
+              hasMore && loading && !refreshing ? (
+                <ActivityIndicator size="small" color={COLORS.primary} style={styles.footerLoader} />
+              ) : null
+            }
+
+            ListEmptyComponent={
+              !isInitialLoading ? (
+                <View style={styles.emptyContainer}>
+                  <Ionicons name='book-outline' size={60} color={COLORS.textSecondary} />
+                  <Text style={styles.emptyText}>No books found</Text>
+                  <Text style={styles.emptySubtext}>Be the first to share your thoughts!</Text>
+                </View>
+              ) : null
+            }
+          />
+
+          {/* Indicatore di pagina flottante */}
+          {showPageIndicator && totalPage > 1 && (
+            <Animated.View
+              style={[
+                styles.floatingPageIndicator,
+                { opacity: pageIndicatorOpacity }
+              ]}
+            >
+              <Text style={styles.floatingPageText}>
+                {page}/{totalPage}
+              </Text>
+            </Animated.View>
+          )}
+        </>
+      )}
     </View>
   )
 }
