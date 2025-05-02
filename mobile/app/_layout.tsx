@@ -10,8 +10,6 @@ export default function RootLayout() {
   const router = useRouter()
   const segments = useSegments()
 
-  console.log('segments', segments)
-
   const { checkAuth, user, token } = useAuthStore()
 
   // al mount facciamo la checkAuth di modo da avere user e token aggiornati
@@ -27,8 +25,6 @@ export default function RootLayout() {
     const inAuthScreen = segments[0] === '(auth)'
     // se sono loggato
     const isSignedIn = user && token
-
-    console.log('isSignedIn', !!isSignedIn)
 
     if (!isSignedIn && !inAuthScreen) router.replace('/(auth)')
     else if (isSignedIn && inAuthScreen) router.replace('/(tabs)')

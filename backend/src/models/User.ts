@@ -7,6 +7,7 @@ interface IUser {
   email: string
   password: string
   profileImage: string
+  createdAt: Date
 }
 
 // Rappresenta un documento utente nel database con tutti i METODI DI ISTANZA (come matchPassword).

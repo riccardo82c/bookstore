@@ -5,23 +5,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import COLORS from '~/constants/colors'
 import { formatPublishDate } from '~/lib/utils'
-
-interface IUser {
-  username: string
-  email: string
-  profileImage: string
-}
-
-interface IBook {
-  _id: string,
-  title: string,
-  caption: string,
-  image: string,
-  rating: number,
-  user: IUser,
-  createdAt: string,
-  updatedAt: string,
-}
+import { IBook } from '~/types'
 
 export default function BookCard({item} : {item: IBook}) {
   return (

@@ -3,37 +3,12 @@ import { useEffect, useState, useRef } from 'react'
 import { useAuthStore } from '~/store/authStore'
 import { BASE_URL } from '~/config/api'
 import styles from '~/assets/styles/home.styles'
-import { Image } from 'expo-image'
 import { Ionicons } from '@expo/vector-icons'
 import COLORS from '~/constants/colors'
-import { formatPublishDate, sleep } from '~/lib/utils'
+import { sleep } from '~/lib/utils'
 import Loader from '~/components/Loader'
 import BookCard from '~/components/BookCard'
-
-interface IUser {
-  username: string
-  email: string
-  profileImage: string
-}
-
-interface IBook {
-  _id: string,
-  title: string,
-  caption: string,
-  image: string,
-  rating: number,
-  user: IUser,
-  createdAt: string,
-  updatedAt: string,
-}
-
-interface BooksResponse {
-  books: IBook[]
-  currentPage: number
-  totalBooks: number
-  totalPage: number
-  message?: string
-}
+import { IBook, BooksResponse } from '~/types'
 
 export default function Home() {
   const { token } = useAuthStore()
