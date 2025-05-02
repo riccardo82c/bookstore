@@ -4,6 +4,8 @@ import SafeScreen from '~/components/SafeScreen'
 import { StatusBar } from 'expo-status-bar'
 import { useAuthStore } from '~/store/authStore'
 import { useEffect } from 'react'
+import Toast, { BaseToast, ToastProps } from 'react-native-toast-message'
+import COLORS from '~/constants/colors'
 
 export default function RootLayout() {
 
@@ -11,6 +13,29 @@ export default function RootLayout() {
   const segments = useSegments()
 
   const { checkAuth, user, token } = useAuthStore()
+
+  const toastConfig = {
+    // Customize the info toast type (the one you're using)
+    info: (props: ToastProps) => (
+      <BaseToast
+        {...props}
+        style={{
+          borderLeftColor: COLORS.primary,
+          backgroundColor: COLORS.background,
+        }}
+        contentContainerStyle={{ paddingHorizontal: 15 }}
+        text1Style={{
+          fontSize: 16,
+          fontWeight: 'bold',
+          color: COLORS.textPrimary,
+        }}
+        text2Style={{
+          fontSize: 14,
+          color: COLORS.textPrimary,
+        }}
+      />
+    ),
+  }
 
   // al mount facciamo la checkAuth di modo da avere user e token aggiornati
   useEffect(() => {
@@ -44,6 +69,7 @@ export default function RootLayout() {
         </Stack>
       </SafeScreen>
       <StatusBar style='auto'></StatusBar>
+      <Toast config={toastConfig}/>
     </SafeAreaProvider>
   )
 }

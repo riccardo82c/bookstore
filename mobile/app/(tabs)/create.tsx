@@ -1,5 +1,5 @@
 import { View, Text, TextInput, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native'
-import { useState } from 'react'
+import { useState, useRef } from 'react' // Added useRef import
 import styles from '~/assets/styles/create.styles'
 import COLORS from '~/constants/colors'
 import { useRouter } from 'expo-router'
@@ -10,32 +10,82 @@ import { useAuthStore } from '~/store/authStore'
 import * as ImagePicker from 'expo-image-picker'
 
 export default function Create() {
-
+  // Your existing state variables
   const [title, setTitle] = useState('')
   const [caption, setCaption] = useState('')
   const [rating, setRating] = useState(3)
   const [image, setImage] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  const { token } = useAuthStore()
+  // Add these references
+  const scrollViewRef = useRef<ScrollView>(null)
+  const captionInputRef = useRef<TextInput>(null)
 
+  const { token } = useAuthStore()
   const router = useRouter()
 
-  const pickImage = async () => {
-    try {
-      // check permessi
-      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync()
-      if (!permissionResult.granted) {
-        Alert.alert('Permission to access camera roll is required!')
-        return
-      }
+  // Function to scroll to the bottom when caption is focused
+  const handleCaptionFocus = () => {
+    // Small delay to ensure keyboard is visible before scrolling
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true })
+    }, 100)
+  }
 
-      // launch image picker
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: 'images',
+  // Your existing methods remain unchanged
+  const checkCameraPermissions = async () => {
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync()
+    if (!permissionResult.granted) {
+      Alert.alert('Permission to access camera is required!')
+      return false
+    }
+    return true
+  }
+
+  const checkMediaLibraryPermissions = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync()
+    if (!permissionResult.granted) {
+      Alert.alert('Permission to access camera roll is required!')
+      return false
+    }
+    return true
+  }
+
+  const takePhoto = async () => {
+    try {
+      // Check camera permissions
+      const hasPermission = await checkCameraPermissions()
+      if (!hasPermission) return
+
+      // Launch camera with updated media types syntax
+      const result = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
         aspect: [4, 3],
-        quality: 0.5 // Ridotta qualità per file più piccoli
+        quality: 0.5
+      })
+
+      if (!result.canceled) {
+        setImage(result.assets[0].uri)
+      }
+    } catch (error) {
+      console.error('Error taking photo:', error)
+      if (error instanceof Error) Alert.alert('Error taking photo:', error.message)
+      else Alert.alert('Error taking photo:', 'An unknown error occurred.')
+    }
+  }
+
+  const pickFromGallery = async () => {
+    try {
+      // Check media library permissions
+      const hasPermission = await checkMediaLibraryPermissions()
+      if (!hasPermission) return
+
+      // Launch image picker with updated media types syntax
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'], // Use array of strings instead of MediaTypeOptions
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.5
       })
 
       if (!result.canceled) {
@@ -48,8 +98,19 @@ export default function Create() {
     }
   }
 
-  const handleSubmit = async () => {
+  const pickImage = () => {
+    Alert.alert(
+      'Choose Option',
+      'Would you like to take a photo or select from gallery?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Take Photo', onPress: takePhoto },
+        { text: 'Choose from Gallery', onPress: pickFromGallery }
+      ]
+    )
+  }
 
+  const handleSubmit = async () => {
     if (!token) {
       Alert.alert('Error', 'You are not logged in')
       return
@@ -60,15 +121,15 @@ export default function Create() {
     try {
       setLoading(true)
 
-      // Creare un oggetto FormData
+      // Create a FormData object
       const formData = new FormData()
 
-      // Aggiungiamo i dati di testo
+      // Add text data
       formData.append('title', title)
       formData.append('caption', caption)
       formData.append('rating', rating.toString())
 
-      // Preparare il file immagine per FormData
+      // Prepare image file for FormData
       let filename = image.split('/').pop()
       let match = /\.(\w+)$/.exec(filename || '')
       let type = match ? `image/${match[1]}` : 'image/jpeg'
@@ -91,7 +152,6 @@ export default function Create() {
 
       if (!response.ok) throw new Error(data.message || 'something went wrong')
 
-
       Alert.alert('Success', 'Book added successfully')
 
       setTitle('')
@@ -99,7 +159,10 @@ export default function Create() {
       setImage(null)
       setRating(3)
 
-      router.push('/')
+      router.push({
+        pathname: '/',
+        params: { showToast: 'true' }
+      })
 
     } catch (error) {
       if (error instanceof Error) Alert.alert('Error', error.message)
@@ -111,10 +174,14 @@ export default function Create() {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
+      style={{ flex: 1, backgroundColor: COLORS.background }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView contentContainerStyle={styles.container} style={styles.scrollViewStyle}>
+      <ScrollView
+        ref={scrollViewRef}
+        contentContainerStyle={[styles.container,{paddingBottom: 80}]}
+        style={styles.scrollViewStyle}
+      >
         <View style={styles.card}>
           {/* HEADER */}
           <View style={styles.header}>
@@ -192,14 +259,16 @@ export default function Create() {
             {/* CAPTION */}
             <View style={styles.formGroup}>
               <Text style={styles.label}>Caption</Text>
-              <TextInput style={styles.textArea}
+              <TextInput
+                ref={captionInputRef}
+                style={styles.textArea}
                 placeholder='Write your review about this book...'
                 placeholderTextColor={COLORS.placeholderText}
                 value={caption}
                 onChangeText={setCaption}
                 multiline
-              >
-              </TextInput>
+                onFocus={handleCaptionFocus} // Add the onFocus handler here
+              />
             </View>
 
             {/* BUTTON */}

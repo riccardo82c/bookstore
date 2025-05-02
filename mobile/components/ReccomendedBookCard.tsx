@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Alert } from 'react-native'
+import { View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-native'
 import React from 'react'
 import styles from '~/assets/styles/profile.styles'
 import { Ionicons } from '@expo/vector-icons'
@@ -9,9 +9,11 @@ import { formatPublishDate } from '~/lib/utils'
 
 export default function ReccomendedBookCard({
   item,
+  loading,
   handleDeleteBook
 }: {
   item: IBook,
+  loading: boolean
   handleDeleteBook: (bookId: string) => Promise<void>
 }) {
 
@@ -32,7 +34,6 @@ export default function ReccomendedBookCard({
   return (
     <View style={styles.bookItem}>
       <Image source={{ uri: item.image }} style={styles.bookImage} contentFit='cover' />
-
       <View style={styles.bookInfo}>
         <Text style={styles.bookTitle}>{item.title}</Text>
         <View style={styles.ratingContainer}>
@@ -53,7 +54,14 @@ export default function ReccomendedBookCard({
 
       {/* delete button */}
       <TouchableOpacity style={styles.deleteButton} onPress={() => confirmDeleteBook(item._id)}>
-        <Ionicons name='trash-outline' size={20} color={COLORS.textSecondary} />
+
+        {loading ? (
+          <ActivityIndicator size='small' color={COLORS.primary} />
+        ):
+
+          <Ionicons name = 'trash-outline' size = { 20 } color = {COLORS.textSecondary} />
+          }
+
       </TouchableOpacity>
     </View>
   )

@@ -9,9 +9,13 @@ import { sleep } from '~/lib/utils'
 import Loader from '~/components/Loader'
 import BookCard from '~/components/BookCard'
 import { IBook, BooksResponse } from '~/types'
+import Toast, { BaseToast } from 'react-native-toast-message'
+import { useLocalSearchParams } from 'expo-router'
 
 export default function Home() {
   const { token } = useAuthStore()
+  const params = useLocalSearchParams()
+  console.log('params', params)
 
   const [books, setBooks] = useState<IBook[] | []>([])
   const [loading, setLoading] = useState(false)
@@ -20,6 +24,23 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(true)
   const [totalBooks, setTotalBooks] = useState(0)
   const [totalPage, setTotalPage] = useState(0)
+
+  useEffect(() => {
+    // Show toast either on first mount OR when route parameters have showToast='true'
+    const timer = setTimeout(() => {
+      Toast.show({
+        type: 'info',
+        position: 'top',
+        text1: 'Bookstore tip',
+        text2: 'Scroll down the page from top to reload content',
+        visibilityTime: 3000,
+        autoHide: true,
+        topOffset: 50
+      })
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [params.showToast])
 
   // Riferimento allo scroll per gestire animazioni
   const scrollY = useRef(new Animated.Value(0)).current

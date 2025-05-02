@@ -20,4 +20,4 @@ riccardo82c
 
 # current video point
 
-https://youtu.be/o3IqOrXtxm8?si=sz3I73i0xLs51271&t=18178
+https://youtu.be/o3IqOrXtxm8?si=y2vLzWB3GZXlurBr&t=18267
