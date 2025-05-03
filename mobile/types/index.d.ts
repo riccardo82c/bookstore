@@ -33,6 +33,7 @@ export interface AuthStore {
   user: IUser | null
   token: string | null
   isLoading: boolean
+  isCheckingAuth: boolean
   register: (username: string, email: string, password: string) => Promise<Response>
   login: (email: string, password: string) => Promise<Response>
   checkAuth: () => Promise<void>

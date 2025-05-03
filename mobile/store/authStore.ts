@@ -7,6 +7,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   user: null,
   token: null,
   isLoading: false,
+  isCheckingAuth: true,
 
   // chiamata endpoint register + salvataggio dati nello store zustand + salvataggio dati nell AsyncStorage
   register: async (username, email, password) => {
@@ -66,12 +67,21 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   // verifica presenza di user e token in AsyncStorage se presenti li salva nello store zustand
   checkAuth: async () => {
-    const user = await AsyncStorage.getItem('user')
-    const token = await AsyncStorage.getItem('token')
 
-    if (user && token) {
-      set({ user: JSON.parse(user), token })
+    try {
+      const user = await AsyncStorage.getItem('user')
+      const token = await AsyncStorage.getItem('token')
+
+      if (user && token) {
+        set({ user: JSON.parse(user), token })
+      }
+    } catch (error) {
+      console.log('auth check failed', error)
+    } finally {
+      set({ isCheckingAuth: false })
     }
+
+
   },
 
   // rimuove dati utente da store zustand e AsyncStorage

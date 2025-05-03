@@ -1,4 +1,4 @@
-import { Stack, useRouter, useSegments } from 'expo-router'
+import { SplashScreen, Stack, useRouter, useSegments } from 'expo-router'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import SafeScreen from '~/components/SafeScreen'
 import { StatusBar } from 'expo-status-bar'
@@ -6,6 +6,9 @@ import { useAuthStore } from '~/store/authStore'
 import { useEffect } from 'react'
 import Toast, { BaseToast, ToastProps } from 'react-native-toast-message'
 import COLORS from '~/constants/colors'
+import { useFonts } from 'expo-font'
+
+SplashScreen.preventAutoHideAsync()
 
 export default function RootLayout() {
 
@@ -13,6 +16,14 @@ export default function RootLayout() {
   const segments = useSegments()
 
   const { checkAuth, user, token } = useAuthStore()
+
+  const [fontsLoaded] = useFonts({
+    'JetBrainsMono-Medium': require('../assets/fonts/JetBrainsMono-Medium.ttf'),
+  })
+
+  useEffect(() => {
+    if (fontsLoaded) SplashScreen.hideAsync()
+  }, [fontsLoaded])
 
   const toastConfig = {
     // Customize the info toast type (the one you're using)
@@ -69,7 +80,7 @@ export default function RootLayout() {
         </Stack>
       </SafeScreen>
       <StatusBar style='auto'></StatusBar>
-      <Toast config={toastConfig}/>
+      <Toast config={toastConfig} />
     </SafeAreaProvider>
   )
 }
